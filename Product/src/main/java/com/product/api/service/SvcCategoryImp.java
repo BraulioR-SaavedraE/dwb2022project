@@ -15,52 +15,94 @@ import com.product.exception.ApiException;
 @Service
 public class SvcCategoryImp implements SvcCategory {
 
+	private final RepoCategory categoryRepository;
+
 	@Autowired
-	RepoCategory repo;
-	
-	@Override
-	public List<Category> getCategories() {
-		return repo.findByStatus(1);
+	public SvcCategoryImp(RepoCategory categoryRepository) {
+		this.categoryRepository = categoryRepository;
 	}
 
 	@Override
-	public Category getCategory(Integer id) {
-		Category category = repo.getCategory(id);
-		if (category != null)
+	public List<Category> listCategories() {
+		return categoryRepository.findAllCategory();
+	}
+
+	@Override
+	public Category readCategory(int categoryId) {
+		Category category = categoryRepository.findByCategoryId(categoryId);
+
+		if(category != null) {
 			return category;
-		else
+		} else {
 			throw new ApiException(HttpStatus.NOT_FOUND, "category does not exist");
+		}
 	}
 
 	@Override
-	public ApiResponse createCategory(Category in) {
-		in.setStatus(1);
-		try {
-			repo.save(in);
-		}catch (DataIntegrityViolationException e) {
-			if (e.getLocalizedMessage().contains("category"))
-				throw new ApiException(HttpStatus.BAD_REQUEST, "category already exist");
+	public ApiResponse createCategory(String category) {
+		try{
+			Category categoryFound = categoryRepository.findByCategory(category);
+
+			if(categoryFound != null) {
+				if(categoryFound.getStatus() == 0) {
+					categoryRepository.activeCategory(category);
+					return new ApiResponse("category has been activated");
+				} else {
+					throw new ApiException(HttpStatus.BAD_REQUEST, "category already exists");
+				}
+			} else {
+				categoryRepository.createCategory(category);
+				return new ApiResponse("category created");
+			}
+		}catch(DataIntegrityViolationException e) {
+			if(e.getLocalizedMessage().contains("category")) {
+				throw new ApiException(HttpStatus.BAD_REQUEST, "category rfc already exist");
+			}
 		}
 		return new ApiResponse("category created");
 	}
 
 	@Override
-	public ApiResponse updateCategory(Category in, Integer id) {
+	public ApiResponse updateCategory(int categoryId, String category) {
 		try {
-			repo.updateCategory(in.getCategory());
-		}catch (DataIntegrityViolationException e) {
-			if (e.getLocalizedMessage().contains("category"))
-				throw new ApiException(HttpStatus.BAD_REQUEST, "category rfc already exist");
+			Category foundCategory = categoryRepository.findByCategoryId(categoryId);
+
+			if(foundCategory == null) {
+				throw new ApiException(HttpStatus.NOT_FOUND, "category does not exist");
+			} else {
+				if(foundCategory.getStatus() == 1) {
+					if(categoryRepository.findByCategory(category) == null) {
+						categoryRepository.updateCategory(categoryId, category);
+						return new ApiResponse("category updated");
+					}else {
+						throw new ApiException(HttpStatus.BAD_REQUEST, "category already exists");
+					}
+				} else {
+					throw new ApiException(HttpStatus.BAD_REQUEST, "category is not active");
+				}
+			}
+		}catch(DataIntegrityViolationException e) {
+			if(e.getLocalizedMessage().contains("category")) {
+				throw new ApiException(HttpStatus.BAD_REQUEST, "category rfc already exists");
+			}
 		}
 		return new ApiResponse("category updated");
 	}
 
 	@Override
-	public ApiResponse deleteCategory(Integer id) {
-		if (repo.deleteCategory(id) > 0)
-			return new ApiResponse("category removed");
-		else
-			throw new ApiException(HttpStatus.BAD_REQUEST, "category cannot be deleted");
-	}
+	public ApiResponse deleteCategory(int categoryId) {
+		Category category = categoryRepository.findByCategoryId(categoryId);
 
+		if(category != null) {
+			if(category.getStatus() == 1) {
+				throw new ApiException(HttpStatus.BAD_REQUEST,
+						"category cannot be removed if it has products");
+			}else {
+				categoryRepository.deleteCategoryById(categoryId);
+				return new ApiResponse("category removed");
+			}
+		} else {
+			throw new ApiException(HttpStatus.NOT_FOUND, "category does not exist");
+		}
+	}
 }

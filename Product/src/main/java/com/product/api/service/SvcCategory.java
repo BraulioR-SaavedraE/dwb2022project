@@ -7,10 +7,14 @@ import com.product.api.entity.Category;
 
 public interface SvcCategory {
 
-	public List<Category> getCategories();
-	public Category getCategory(Integer id);
-	public ApiResponse createCategory(Category in);
-	public ApiResponse updateCategory(Category in, Integer id);
-	public ApiResponse deleteCategory(Integer id);
+	List<Category> listCategories() throws Exception;
+
+	Category readCategory(int categoryId);
+
+	ApiResponse createCategory(String category);
+
+	ApiResponse updateCategory(int categoryId, String category);
+
+	ApiResponse deleteCategory(int categoryId);
 
 }

@@ -46,7 +46,14 @@ public class SvcCustomerImp implements SvcCustomer {
 		in.setStatus(1);
 		in.setCustomerImage(new CustomerImage());
 		try {
-			repo.save(in);
+			if(repo.findByRfc(in.getRfc()) == null) {
+				if(repo.findByMail(in.getMail()) == null)
+					repo.save(in);
+				else
+					throw new ApiException(HttpStatus.BAD_REQUEST, "customer mail already exist");
+			}else {
+				throw new ApiException(HttpStatus.BAD_REQUEST, "customer rfc already exist");
+			}
 		}catch (DataIntegrityViolationException e) {
 			if (e.getLocalizedMessage().contains("rfc"))
 				throw new ApiException(HttpStatus.BAD_REQUEST, "customer rfc already exist");

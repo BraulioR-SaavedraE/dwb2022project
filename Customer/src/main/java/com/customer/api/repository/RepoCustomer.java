@@ -16,7 +16,8 @@ import com.customer.api.entity.Customer;
 public interface RepoCustomer extends JpaRepository<Customer, Integer>{
 
 	Customer findByRfcAndStatus(String rfc, Integer status);
-	
+	Customer findByRfc(String rfc);
+	Customer findByMail(String mail);
 	@Modifying
 	@Transactional
 	@Query(value ="UPDATE customer "

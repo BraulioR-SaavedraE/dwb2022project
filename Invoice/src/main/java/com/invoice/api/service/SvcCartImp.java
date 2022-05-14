@@ -2,6 +2,8 @@ package com.invoice.api.service;
 
 import java.util.List;
 
+import com.invoice.api.dto.DtoProduct;
+import com.invoice.configuration.client.ProductClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,9 @@ public class SvcCartImp implements SvcCart {
 	
 	@Autowired
 	CustomerClient customerCl;
+
+	@Autowired
+	ProductClient productCl;
 	
 	@Override
 	public List<Cart> getCart(String rfc) {
@@ -32,12 +37,16 @@ public class SvcCartImp implements SvcCart {
 	public ApiResponse addToCart(Cart cart) {
 		if(!validateCustomer(cart.getRfc()))
 			throw new ApiException(HttpStatus.BAD_REQUEST, "customer does not exist");
-			
+
 		/*
 		 * Sprint 1 - Requerimiento 2
 		 * Validar que el GTIN exista. Si existe, asignar el stock del producto a la variable product_stock 
 		 */
-		Integer product_stock = 0; // cambiar el valor de cero por el stock del producto recuperado de la API Product 
+
+		if(!validateProduct(cart.getGtin()))
+			throw new ApiException(HttpStatus.BAD_REQUEST, "product does not exist");
+
+		Integer product_stock = productCl.getProduct(cart.getGtin()).getBody().getStock(); // cambiar el valor de cero por el stock del producto recuperado de la API Product
 		
 		if(cart.getQuantity() > product_stock) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "invalid quantity");
@@ -81,4 +90,16 @@ public class SvcCartImp implements SvcCart {
 		}
 	}
 
+	private boolean validateProduct(String gtin) {
+		try {
+			ResponseEntity<DtoProduct> response = productCl.getProduct(gtin);
+			if(response.getStatusCode() == HttpStatus.OK)
+				return true;
+			else
+				return false;
+		}catch(Exception e) {
+			System.out.println(e);
+			throw new ApiException(HttpStatus.BAD_REQUEST, "unable to retrieve product information");
+		}
+	}
 }

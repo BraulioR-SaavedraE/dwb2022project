@@ -2,7 +2,9 @@ package com.product.api.controller;
 
 import javax.validation.Valid;
 
+import com.product.api.dto.ProductDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -20,34 +22,50 @@ import com.product.api.entity.Product;
 import com.product.api.service.SvcProduct;
 import com.product.exception.ApiException;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/product")
 public class CtrlProduct {
 
+	private final SvcProduct productService;
+
 	@Autowired
-	SvcProduct svc;
-	
+	CtrlProduct(SvcProduct productService) {
+		this.productService = productService;
+	}
+
 	@GetMapping("/{gtin}")
 	public ResponseEntity<Product> getProduct(@PathVariable("gtin") String gtin){
-		return new ResponseEntity<>(svc.getProduct(gtin), HttpStatus.OK);
+		return new ResponseEntity<>(productService.getProduct(gtin), HttpStatus.OK);
 	}
-	
+
 	@PostMapping
 	public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody Product in, BindingResult bindingResult){
 		if(bindingResult.hasErrors())
 			throw new ApiException(HttpStatus.BAD_REQUEST, bindingResult.getAllErrors().get(0).getDefaultMessage());
-		return new ResponseEntity<>(svc.createProduct(in),HttpStatus.OK);
+		return new ResponseEntity<>(productService.createProduct(in),HttpStatus.OK);
 	}
-	
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse> updateProduct(@PathVariable("id") Integer id, @Valid @RequestBody Product in, BindingResult bindingResult){
-		if(bindingResult.hasErrors())
-			throw new ApiException(HttpStatus.BAD_REQUEST, bindingResult.getAllErrors().get(0).getDefaultMessage());
-		return new ResponseEntity<>(svc.updateProduct(in, id),HttpStatus.OK);
+
+	@GetMapping(path = "/category/{category_id}")
+	ResponseEntity<List<ProductDTO>> listProducts(@PathVariable(value = "category_id")
+														  int categoryId) throws Exception{
+		List<ProductDTO> products = productService.listProducts(categoryId);
+
+		return new ResponseEntity<>(products, HttpStatus.OK);
 	}
-	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponse> deleteProduct(@PathVariable("id") Integer id){
-		return new ResponseEntity<>(svc.deleteProduct(id), HttpStatus.OK);
+
+	@PutMapping(path = "/{product_id}")
+	ResponseEntity<ApiResponse> updateProductCategory(@PathVariable(value = "product_id") int productId,
+													  @RequestBody Product product) {
+		try {
+			ApiResponse response = productService.updateProductCategory(productId, product.getCategory_id());
+		}catch(DataIntegrityViolationException e) {
+			if(e.getLocalizedMessage().contains("gtin"))
+				throw new ApiException(HttpStatus.BAD_REQUEST, "product gtin already exist");
+			if(e.getLocalizedMessage().contains("product"))
+				throw new ApiException(HttpStatus.BAD_GATEWAY, "product name already exist");
+		}
+		return new ResponseEntity<>(new ApiResponse("product updated"), HttpStatus.OK);
 	}
 }

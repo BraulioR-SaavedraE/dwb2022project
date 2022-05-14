@@ -26,35 +26,58 @@ import com.product.exception.ApiException;
 @RequestMapping("/category")
 public class CtrlCategory {
 
+	private final SvcCategory categoryService;
+
 	@Autowired
-	SvcCategory svcCategory;
-	
+	public CtrlCategory(SvcCategory categoryService) {
+		this.categoryService = categoryService;
+	}
+
 	@GetMapping
-	public ResponseEntity<List<Category>> getCategories(){
-		return new ResponseEntity<>(svcCategory.getCategories(), HttpStatus.OK);
+	public ResponseEntity<List<Category>> listCategories() throws Exception{
+		List<Category> categories = categoryService.listCategories();
+
+		return new ResponseEntity<>(categories, HttpStatus.OK);
 	}
-	
-	@GetMapping("/{id}")
-	public ResponseEntity<Category> getCategory(@PathVariable("id") int id){
-		return new ResponseEntity<>(svcCategory.getCategory(id), HttpStatus.OK);
+
+	@GetMapping(path = "/{category_id}")
+	public ResponseEntity<Category> readCategory(@PathVariable(value = "category_id") int categoryId) {
+		Category category = categoryService.readCategory(categoryId);
+
+		return new ResponseEntity<>(category, HttpStatus.OK);
 	}
-	
+
 	@PostMapping
-	public ResponseEntity<ApiResponse> createCategory(@Valid @RequestBody Category in, BindingResult bindingResult){
-		if(bindingResult.hasErrors())
-			throw new ApiException(HttpStatus.BAD_REQUEST, bindingResult.getAllErrors().get(0).getDefaultMessage());
-		return new ResponseEntity<>(svcCategory.createCategory(in),HttpStatus.CREATED);
+	public ResponseEntity<ApiResponse> createCategory(@Valid @RequestBody Category category,
+													  BindingResult bindingResult) {
+		if(bindingResult.hasErrors()) {
+			throw new ApiException(HttpStatus.BAD_REQUEST,
+					bindingResult.getAllErrors().get(0).getDefaultMessage());
+		}
+
+		ApiResponse isCreated = categoryService.createCategory(category.getCategory());
+
+		return new ResponseEntity<>(isCreated, HttpStatus.CREATED);
 	}
-	
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse> updateCategory(@PathVariable("id") Integer id, @Valid @RequestBody Category in, BindingResult bindingResult){
-		if(bindingResult.hasErrors())
-			throw new ApiException(HttpStatus.BAD_REQUEST, bindingResult.getAllErrors().get(0).getDefaultMessage());
-		return new ResponseEntity<>(svcCategory.updateCategory(in, id),HttpStatus.OK);
+
+	@PutMapping(path = "/{category_id}")
+	public ResponseEntity<ApiResponse> updateCategory(@PathVariable(value = "category_id") int categoryId,
+													  @Valid @RequestBody Category category,
+													  BindingResult bindingResult) {
+		if(bindingResult.hasErrors()) {
+			throw new ApiException(HttpStatus.BAD_REQUEST,
+					bindingResult.getAllErrors().get(0).getDefaultMessage());
+		}
+
+		ApiResponse isUpdated = categoryService.updateCategory(categoryId, category.getCategory());
+
+		return new ResponseEntity<>(isUpdated, HttpStatus.OK);
 	}
-	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponse> deleteCategory(@PathVariable("id") Integer id){
-		return new ResponseEntity<>(svcCategory.deleteCategory(id), HttpStatus.OK);
+
+	@DeleteMapping("/{category_id}")
+	public ResponseEntity<ApiResponse> deleteCategory(@PathVariable int category_id) {
+		ApiResponse deletedCategory = categoryService.deleteCategory(category_id);
+
+		return new ResponseEntity<>(deletedCategory, HttpStatus.OK);
 	}
 }

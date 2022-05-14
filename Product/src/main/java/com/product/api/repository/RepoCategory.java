@@ -15,18 +15,42 @@ import com.product.api.entity.Category;
 @Repository
 public interface RepoCategory extends JpaRepository<Category, Integer>{
 
-	List<Category> findByStatus(@Param("status") Integer status);
-	
+	@Query(value = "SELECT * FROM category WHERE status = 1", nativeQuery = true)
+	List<Category> findAllCategory();
+
 	@Query(value ="SELECT * FROM category WHERE category_id = :category_id AND status = 1", nativeQuery = true)
 	Category getCategory(Integer category_id);
-	
-	@Modifying
+
+	@Query(value = "SELECT * FROM category WHERE category_id = :category_id",
+			nativeQuery = true)
+	Category findByCategoryId(@Param(value = "category_id") Integer categoryId);
+
 	@Transactional
-	@Query(value ="UPDATE category SET category = :category WHERE status = 1", nativeQuery = true)
-	Integer updateCategory(@Param("category") String category);
-	
 	@Modifying
+	@Query(value = "INSERT INTO category (category, status) VALUES (:category, 1)",
+			nativeQuery = true)
+	void createCategory(@Param(value = "category") String category);
+
+	@Query(value = "SELECT * FROM category WHERE category = :category",
+			nativeQuery = true)
+	Category findByCategory(@Param(value = "category") String category);
+
 	@Transactional
-	@Query(value ="UPDATE category SET status = 0 WHERE category_id = :category_id AND status = 1", nativeQuery = true)
-	Integer deleteCategory(@Param("category_id") Integer category_id);
+	@Modifying
+	@Query(value = "UPDATE category SET category = :category WHERE category_id = :category_id",
+			nativeQuery = true)
+	void updateCategory(@Param(value = "category_id") int categoryId,
+						@Param(value = "category") String category);
+
+	@Transactional
+	@Modifying
+	@Query(value = "UPDATE category SET status = 1 WHERE category = :category",
+			nativeQuery = true)
+	void activeCategory(@Param(value = "category") String category);
+
+	@Transactional
+	@Modifying
+	@Query(value = "DELETE FROM category where category_id = :category_id",
+			nativeQuery = true)
+	void deleteCategoryById(@Param(value = "category_id") int categoryId);
 }
