@@ -13,5 +13,6 @@ public interface SvcProduct {
 	ApiResponse updateProductCategory(int productId, int categoryId);
 	ApiResponse updateProduct(Product in, Integer id);
 	ApiResponse deleteProduct(Integer id);
+	ApiResponse updateStock(Integer id, Integer quantity);
 
 }

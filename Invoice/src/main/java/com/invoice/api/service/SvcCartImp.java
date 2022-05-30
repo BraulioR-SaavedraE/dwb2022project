@@ -56,7 +56,18 @@ public class SvcCartImp implements SvcCart {
 		 * Sprint 2 - Requerimiento 3
 		 * Validar si el producto ya había sido agregado al carrito para solo actualizar su cantidad
 		 */
-		
+
+		List<Cart> carts = repo.findByRfcAndStatus(cart.getRfc(), 1);
+		for(Cart item : carts) {
+			if(item.getGtin().equals(cart.getGtin())) {
+				if(item.getQuantity() + cart.getQuantity() > product_stock) {
+					throw new ApiException(HttpStatus.BAD_REQUEST, "invalid quantity");
+				}else {
+					repo.updateQuantity(item.getCart_id(), item.getQuantity() + cart.getQuantity());
+					return new ApiResponse("quantity updated");
+				}
+			}
+		}
 		cart.setStatus(1);
 		repo.save(cart);
 		return new ApiResponse("item added");
@@ -91,6 +102,19 @@ public class SvcCartImp implements SvcCart {
 	}
 
 	private boolean validateProduct(String gtin) {
+		try {
+			ResponseEntity<DtoProduct> response = productCl.getProduct(gtin);
+			if(response.getStatusCode() == HttpStatus.OK)
+				return true;
+			else
+				return false;
+		}catch(Exception e) {
+			System.out.println(e);
+			throw new ApiException(HttpStatus.BAD_REQUEST, "unable to retrieve product information");
+		}
+	}
+
+	private boolean validateAddedProduct(String gtin) {
 		try {
 			ResponseEntity<DtoProduct> response = productCl.getProduct(gtin);
 			if(response.getStatusCode() == HttpStatus.OK)

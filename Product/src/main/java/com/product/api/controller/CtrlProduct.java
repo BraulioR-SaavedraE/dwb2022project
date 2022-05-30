@@ -68,4 +68,16 @@ public class CtrlProduct {
 		}
 		return new ResponseEntity<>(new ApiResponse("product updated"), HttpStatus.OK);
 	}
+
+	@PutMapping(path = "/{product_id}/{quantity}")
+	ResponseEntity<ApiResponse> updateStock(@PathVariable(value = "product_id") int productId,
+												@PathVariable(value = "quantity") int quantity) {
+		try {
+			ApiResponse response = productService.updateStock(productId, quantity);
+		}catch(DataIntegrityViolationException e) {
+			if(e.getLocalizedMessage().contains("stock"))
+				throw new ApiException(HttpStatus.BAD_REQUEST, "we have not enough stock");
+		}
+		return new ResponseEntity<>(new ApiResponse("stock updated"), HttpStatus.OK);
+	}
 }

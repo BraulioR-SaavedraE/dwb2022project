@@ -56,4 +56,14 @@ public interface RepoProduct extends JpaRepository<Product, Integer>{
 	@Transactional
 	@Query(value ="UPDATE product SET status = 0 WHERE product_id = :product_id AND status = 1", nativeQuery = true)
 	Integer deleteProduct(@Param("product_id") Integer product_id);
+
+	@Modifying
+	@Transactional
+	@Query(value ="UPDATE product "
+			+ "SET stock = :stock"
+			+ " WHERE product_id = :product_id", nativeQuery = true)
+	Integer updateStock(
+			@Param("product_id") Integer product_id,
+			@Param("stock") Integer stock
+	);
 }

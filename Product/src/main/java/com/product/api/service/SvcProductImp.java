@@ -110,4 +110,21 @@ public class SvcProductImp implements SvcProduct {
 		else
 			throw new ApiException(HttpStatus.BAD_REQUEST, "product cannot be deleted");
 	}
+
+	@Override
+	public ApiResponse updateStock(Integer id, Integer quantity) {
+		Product foundProduct = productRepository.findProductById(id);
+
+		if(foundProduct == null) {
+			throw new ApiException(HttpStatus.BAD_REQUEST, "product does not exist");
+		}else {
+			if(foundProduct.getStock() <= quantity) {
+				throw new ApiException(HttpStatus.BAD_REQUEST, "product does not have enough stock");
+			}else {
+				Integer newStock = foundProduct.getStock() - quantity;
+				productRepository.updateStock(id, newStock);
+				return new ApiResponse("stock has been updated");
+			}
+		}
+	}
 }
