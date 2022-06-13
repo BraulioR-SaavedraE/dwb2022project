@@ -112,8 +112,8 @@ public class SvcProductImp implements SvcProduct {
 	}
 
 	@Override
-	public ApiResponse updateStock(Integer id, Integer quantity) {
-		Product foundProduct = productRepository.findProductById(id);
+	public ApiResponse updateStock(String gtin, Integer quantity) {
+		Product foundProduct = productRepository.findByGtinAndStatus(gtin, 1);
 
 		if(foundProduct == null) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "product does not exist");
@@ -122,7 +122,7 @@ public class SvcProductImp implements SvcProduct {
 				throw new ApiException(HttpStatus.BAD_REQUEST, "product does not have enough stock");
 			}else {
 				Integer newStock = foundProduct.getStock() - quantity;
-				productRepository.updateStock(id, newStock);
+				productRepository.updateStock(gtin, newStock);
 				return new ApiResponse("stock has been updated");
 			}
 		}

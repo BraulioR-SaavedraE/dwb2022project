@@ -8,7 +8,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.product.api.dto.ApiResponse;
 import com.product.api.entity.Product;
 import com.product.api.service.SvcProduct;
@@ -69,11 +67,11 @@ public class CtrlProduct {
 		return new ResponseEntity<>(new ApiResponse("product updated"), HttpStatus.OK);
 	}
 
-	@PutMapping(path = "/{product_id}/{quantity}")
-	ResponseEntity<ApiResponse> updateStock(@PathVariable(value = "product_id") int productId,
+	@PutMapping(path = "/{gtin}/{quantity}")
+	ResponseEntity<ApiResponse> updateStock(@PathVariable(value = "gtin") String gtin,
 												@PathVariable(value = "quantity") int quantity) {
 		try {
-			ApiResponse response = productService.updateStock(productId, quantity);
+			ApiResponse response = productService.updateStock(gtin, quantity);
 		}catch(DataIntegrityViolationException e) {
 			if(e.getLocalizedMessage().contains("stock"))
 				throw new ApiException(HttpStatus.BAD_REQUEST, "we have not enough stock");

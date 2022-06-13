@@ -5,8 +5,9 @@ package com.invoice.api.dto;
  * Agregar atributos de clase para la validación del producto
  */
 public class DtoProduct {
-    String gtin;
-    Integer stock;
+    private String gtin;
+    private Integer stock;
+    private double price;
 
     public DtoProduct() {
     }
@@ -25,5 +26,13 @@ public class DtoProduct {
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

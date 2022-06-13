@@ -1,18 +1,13 @@
 package com.product.api.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
 
 @Entity
 @Table(name = "product")
@@ -25,7 +20,7 @@ public class Product {
 	private Integer product_id;
 	
 	@JsonProperty("gtin")
-	@Column(name = "gtin")
+	@Column(name = "gtin", unique = true)
 	@NotNull(message="gtin is required")
 	private String gtin;
 	

@@ -1,4 +1,5 @@
 /home/rubencico/Uni/8/Seminario Backend/Proyecto/Product/src/main/java/com/product/api/controller/CtrlProduct.java
+/home/rubencico/Uni/8/Seminario Backend/Proyecto/Product/src/main/java/com/product/api/dto/ProductDTO.java
 /home/rubencico/Uni/8/Seminario Backend/Proyecto/Product/src/main/java/com/product/api/repository/RepoProduct.java
 /home/rubencico/Uni/8/Seminario Backend/Proyecto/Product/src/main/java/com/product/api/service/SvcCategory.java
 /home/rubencico/Uni/8/Seminario Backend/Proyecto/Product/src/main/java/com/product/api/repository/RepoCategory.java
